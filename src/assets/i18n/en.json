@@ -1,0 +1,17 @@
+{
+    "login": 
+    {
+        "title" : "Welcome back!",
+        "form": 
+        {
+            "title": "Sign in",
+            "registerTitle" : "Don't have an account?",
+            "registerLink" : "Click here to sign up",
+            "placeHolderUser": "Enter email",
+            "placeHolderPsw": "Enter password",
+            "rememberText" : "Remember me?",
+            "forgotPswText": "Forgot password?",
+            "loginText": "Login"
+        }
+    }
+}

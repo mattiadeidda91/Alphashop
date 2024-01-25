@@ -1,0 +1,20 @@
+<app-header></app-header>
+
+<main style="background-color: #eff2f6 !important;">
+    <div class="container">
+        <p>{{salutiBe}} <br />clicca <a routerLink="/articoli">qui</a> per vedere l'elenco degli articoli</p>
+    </div>
+
+    <br />
+
+    <!-- Esempio di prova come far interagire il front-end con backend -->
+    <div class="row text-center">
+        <div class="col-6">
+            <button class="btn btn-primary" (click)="getSaluti()">Saluti da Backend</button>
+        </div>
+        <div class="col-6">
+            <p class="text-success">{{salutiBe}}</p>
+            <p class="text-danger">{{errorBe}}</p>
+        </div>
+    </div>
+</main>

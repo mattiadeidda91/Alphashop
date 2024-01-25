@@ -1,0 +1,184 @@
+<!-- Spinner Bootstrap-->
+<app-spinner></app-spinner>
+
+<section id="manageArt" class="content-main" style="max-width: 760px">
+
+    <div class="content-header" style="margin-bottom: 10px;">
+		<h2 class="content-title">{{title}}</h2>
+		<div>
+			<a class="btn btn-outline-danger" (click)="back()"> × Annulla</a>
+		</div>
+	</div>
+
+	<div class="card mb-4">
+    	<div class="card-body">
+
+	<!-- 
+		1. In angular tutti i tag che utilizzzano ngModel all'interno di un form devono avere l'attributo name="" 
+		2. Inserire le stesse logiche di validazione del backend sui campi del form con required e altri attributi
+		3. Validazione del form utilizzando le templates variables (https://angular.io/guide/template-reference-variables) di angular #nomeVariabile="ngForm" -> #artForm="ngForm"
+			in sostanza si può assegnare una variabile a qualunque cosa(oggetto=elemento o componente html) nel file per poi manipolarlo e averne il controllo
+			noi la utilizzeremo per assegnare la variabile al form e ai campi per verificare la validazione prima di mandare i dati al backend
+		4. con angular il <button> che invia i dati non deve può gestire il (click)="save()" bensì sarà il tag form a gestire il submit con (ngSubmit)="save()"
+			fare però attenzione che il button abbia l'attributo type="submit"
+		5. Per validare il form nel (ngSubmit)="save()" bisogna utilizzare la variabile template #artForm per verificarne la validità (ngSubmit)="artForm.valid && save()"
+			che significa che i dati verranno inviati al backend solo se il form verrà considerato valido a seconda dalle validazioni dei campi al suo interno
+	-->
+    <form (ngSubmit)="artForm.valid && save()" #artForm="ngForm">
+		<!-- Codice, Barcode -->
+		<div class="row gx-2">
+			<div class="col-sm-6 mb-3">
+				<label for="codArt" class="form-label">Codice Articolo:</label>
+				<!-- 
+					disabilito il campo perchè non èuò essere modificato in quanto primary key 
+					#codiceArt="ngModel" -> variabile template che si riferisce unicamente a questo input, la usiamo per stabilirne la validità
+				-->
+				<input id="codArt" name="codArt"  type="text" placeholder="" class="form-control" 
+					required
+					minlength="5"
+					maxlength="30"
+					[(ngModel)]="articolo.codArt"
+					#codiceArt="ngModel"
+					[disabled]="isModify">
+				<!-- 
+					Se l'input è invalido e se l'input ha subito una modifica(dirty) o se l'input ha il focus e l'ha poi perso (touched) 
+					visualizziamo un messaggio di errore
+				-->
+				<span style="color: red;" *ngIf="codiceArt.invalid && (codiceArt.dirty || codiceArt.touched)">
+					Il Codice Articolo deve essere compreso tra 5 e 30 caratteri
+				</span>
+				
+			</div>
+			<div class="col-sm-6 mb-3">
+				<label for="ean" class="form-label">Barcode:</label>
+				<!-- 
+					[(ngModel)]="barcode" - NON USA ngModel xk la gestione dei barcodes verrà fatta da una specifica pagina
+					quindi usiamo semplicemente l'interpolazione senza possibilità di modifica, quindi sola lettura del primo barcode della lista
+					infatti aggiungiamo il l'attributo disabled per impedirne la modifica(anche se non ci fosse non verrebbe presa xk non abbiamo usato ngModel)
+				 -->
+				<input id="ean"  type="text" placeholder="" class="form-control" value="{{barcode}}" [disabled]="isModify"> 
+			</div>
+		</div>
+
+		<!--Descrizione -->
+		<div class="mb-4">
+				<label class="form-label">Descrizione Articolo</label>
+				<textarea name="desc" placeholder="" class="form-control" rows="2" 
+					[(ngModel)]="articolo.descrizione"
+					#descArt="ngModel"
+					minlength="5"
+					maxlength="80"
+					required>
+				</textarea>
+				<span style="color: red;" *ngIf="descArt.invalid && (descArt.dirty || descArt.touched)">
+					La Descrizione deve essere compresa tra 5 e 80 caratteri
+				</span>
+			</div>
+
+			<!--Unità di misura, Iva -->
+			<div class="row gx-2">
+				<div class="col-sm-6 mb-3">
+					<label class="form-label">Unità di Misura</label>
+					<select name="unita" class="form-select" [(ngModel)]="articolo.um">
+						<option value="-1">--- Seleziona Unità di Misura ---</option>
+						<option value="PZ"> Pezzi </option>
+						<option value="LT"> Litri </option>
+						<option value="KG"> Kilogrammi </option>
+					</select>
+				</div>
+				<div class="col-sm-6 mb-3">
+					<label class="form-label">Iva</label>
+					<select name="iva" class="form-select" [(ngModel)]="articolo.idIva">
+						<!-- [ngValue]="" per specificare il valore dell'option che sarà l'id dell'iva ciclato tramite *ngFor -->
+						<option value="-1">--- Seleziona Iva ---</option>
+						<option [ngValue]="iva.idIva" *ngFor="let iva of ivas"> 
+							{{iva.descrizione}} 
+						</option>
+					</select>
+				</div>
+			</div>
+
+			<!-- Pezzi per cartone, Peso, Prezzo, Valuta -->
+			<div class="mb-4">
+				<label class="form-label">Pezzi Per Cartone: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Peso Netto:</label>
+				<div class="row gx-2">
+				<div class="col-3">
+					<input name="pezzi" placeholder="Pezzi" type="text" class="form-control" 
+						required
+						#pezziArt="ngModel"
+						maxlength="3"
+						minlength="1"
+						[(ngModel)]="articolo.pzCart">
+					<span style="color: red;" *ngIf="pezziArt.invalid && (pezziArt.dirty || pezziArt.touched)">
+						Il numero di pezzi deve essere compreso tra 0 e 100
+					</span>
+				</div>
+				<div class="col-3">
+					<input name="peso" placeholder="Peso" type="text" class="form-control" 
+						[(ngModel)]="articolo.pesoNetto" 
+						required 
+						maxlength="4"
+						minlength="1"
+						#pesoArt="ngModel">
+					<span style="color: red;" *ngIf="pesoArt.invalid && (pesoArt.dirty || pesoArt.touched)">
+						Il peso netto deve essere tra 0.01 e 100
+					</span>
+				</div>
+				<div class="col-4">
+					<input placeholder="Prezzo" type="text" class="form-control" value="{{articolo.prezzo}}">
+				</div>
+				<div class="col-2">
+					<select class="form-select">
+						<option> EUR </option>
+						<option> USD </option>
+						<option> GBP </option>
+					</select>
+				</div>
+			</div>
+			</div>
+
+			<!-- Categoria, Stato Articolo -->
+			<div class="row gx-2">
+				<div class="col-sm-6 mb-3">
+					<label class="form-label">Categoria:</label>
+					<select name="famAss" class="form-select" [(ngModel)]="articolo.idFamAss">
+						<!-- [ngValue]="" per specificare il valore dell'option che sarà l'id del fam ciclato tramite *ngFor -->
+						<option *ngFor="let fam of famAssorts" [ngValue]="fam.id"> 
+							{{fam.descrizione}} 
+						</option>
+					</select>
+				</div>
+					<div class="col-sm-6 mb-3">
+					<label class="form-label">Stato:</label>
+					<select name="stato" class="form-select" [(ngModel)]="articolo.idStatoArt">
+						<option value="1"> Attivo </option>
+						<option value="2"> Sospeso </option>
+						<option value="3"> Eliminato </option>
+					</select>
+					</div>
+			</div>
+
+			<!-- Immagine -->
+			<div class="mb-4">
+				<label class="form-label">Immagine:</label>
+				<input class="form-control" type="file">
+			</div>
+
+		<br>
+		<!--
+			1. Non serve più (click)="save();" perchè verrà gestito dal tag form con (ngSubmit)="save()"
+			2. utilizziamo la variabile template artForm per gestire l'abilitazione/disabilitazione del button a seconda se il form è valido o meno -> [disabled]="artForm.invalid"
+		-->
+		<button type="submit" class="btn btn-primary" [disabled]="artForm.invalid" >Salva Articolo</button>
+
+		<!-- Altro modo rispetto a quello del componente articoli di come visualizzare il messaggio di risp o l'errore utilizzando un solo campo per entrambi -->
+		<div [ngClass]="isSuccess ? 'alert alert-success' : 'alert alert-danger'" class="alert alert-success" style="margin-top: 10px;" role="alert" *ngIf="isSuccess !== null">
+			{{backendMsg}}
+		</div>
+
+    </form>
+
+    </div>
+</div>
+
+</section>
